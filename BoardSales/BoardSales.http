@@ -1,0 +1,6 @@
+@BoardSales_HostAddress = http://localhost:5243
+
+GET {{BoardSales_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
