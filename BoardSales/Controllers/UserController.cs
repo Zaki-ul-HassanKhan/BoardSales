@@ -1,4 +1,5 @@
-﻿using Domain.Repository.UnitOfWork;
+﻿using Domain.DtoModels;
+using Domain.Repository.UnitOfWork;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +9,6 @@ namespace BoardSales.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -34,8 +34,10 @@ namespace BoardSales.Controllers
 
         // POST api/<UserController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public ActionResult AddUser(RegisterUserRequest value)
         {
+            var users = _unitOfWork.UserRepository.AddUser(value);
+            return Ok(users);
         }
 
         // PUT api/<UserController>/5

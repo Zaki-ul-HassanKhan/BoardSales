@@ -9,6 +9,7 @@ namespace Domain.Repository.User
 {
     public interface IUserRepository:IGenericRepository<EntityModels.User>
     {
-        Domain.DtoModels.User GetByUserNamePassword(LoginModel loginModel);
+        bool GetByUserNamePassword(LoginModel loginModel);
+        Task<RegisterUserRequest> AddUser(RegisterUserRequest registerUserRequest);
     }
 }

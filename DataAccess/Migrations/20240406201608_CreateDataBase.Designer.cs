@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(BoardSalesDbContext))]
-    [Migration("20240402190845_CreateDatabase")]
-    partial class CreateDatabase
+    [Migration("20240406201608_CreateDataBase")]
+    partial class CreateDataBase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,6 +45,9 @@ namespace DataAccess.Migrations
 
                     b.Property<string>("Hash")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Salt")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");

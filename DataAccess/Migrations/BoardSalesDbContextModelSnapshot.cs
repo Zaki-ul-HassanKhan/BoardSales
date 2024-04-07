@@ -43,6 +43,9 @@ namespace DataAccess.Migrations
                     b.Property<string>("Hash")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<byte[]>("Salt")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateDatabase : Migration
+    public partial class CreateDataBase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -44,6 +44,7 @@ namespace DataAccess.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     Adapter = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Hash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Salt = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     Status = table.Column<bool>(type: "bit", nullable: false),
                     DateAdded = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateUpdated = table.Column<DateTime>(type: "datetime2", nullable: true)

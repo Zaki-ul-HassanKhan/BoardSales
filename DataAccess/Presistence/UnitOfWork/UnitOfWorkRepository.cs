@@ -17,10 +17,11 @@ namespace DataAccess.Presistence.UnitOfWork
         private readonly BoardSalesDbContext _boardSalesDbContext;
         private UserRepository _userRepository;
         private ProductRepository _productRepository;
+        private IUnitOfWork unitOfWork;
         public UnitOfWorkRepository(BoardSalesDbContext boardSalesDbContext)
         {
             _boardSalesDbContext = boardSalesDbContext;
-            UserRepository = new UserRepository(boardSalesDbContext);
+            UserRepository = new UserRepository(boardSalesDbContext, unitOfWork);
             ProductRepository = new ProductRepository(boardSalesDbContext); 
         }
         public IUserRepository UserRepository { get; }

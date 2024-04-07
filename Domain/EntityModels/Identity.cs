@@ -15,6 +15,7 @@ namespace Domain.EntityModels
         public virtual User User { get; set; }
         public string Adapter { get; set; }
         public string? Hash { get; set; }
+        public byte[]? Salt { get; set; }
         public bool Status { get; set; }
         public DateTime DateAdded { get; set; }
         public DateTime? DateUpdated { get; set; }
