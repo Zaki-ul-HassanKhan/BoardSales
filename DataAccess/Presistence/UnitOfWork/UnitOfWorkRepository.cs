@@ -4,6 +4,7 @@ using DataAccess.Presistence.User;
 using Domain.Repository.Product;
 using Domain.Repository.UnitOfWork;
 using Domain.Repository.User;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,19 +19,17 @@ namespace DataAccess.Presistence.UnitOfWork
         private UserRepository _userRepository;
         private ProductRepository _productRepository;
         private IUnitOfWork unitOfWork;
-        public UnitOfWorkRepository(BoardSalesDbContext boardSalesDbContext)
+        private readonly IConfiguration _configuration;
+        public UnitOfWorkRepository(BoardSalesDbContext boardSalesDbContext, IConfiguration configuration)
         {
             _boardSalesDbContext = boardSalesDbContext;
-            UserRepository = new UserRepository(boardSalesDbContext, unitOfWork);
+            _configuration = configuration;
+            UserRepository = new UserRepository(boardSalesDbContext, _configuration);
             ProductRepository = new ProductRepository(boardSalesDbContext); 
         }
         public IUserRepository UserRepository { get; }
 
         public IProductRepository ProductRepository { get; }
-
-        public IUserRepository User => throw new NotImplementedException();
-
-        public IProductRepository Product => throw new NotImplementedException();
 
         //public IUserRepository User => throw new NotImplementedException();
 

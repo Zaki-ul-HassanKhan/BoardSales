@@ -22,6 +22,10 @@ namespace Domain.EntityModels
         public bool Active { get; set; } = true;
         public bool Verified { get; set; } = true;
         public string? VerificationCode { get; set; }
+        public int? BoardType { get; set; }
+        public int? BoardLength { get; set; }
+        public int? Distance { get; set; }
+        public bool? GetStartedCompleted { get; set; }
         public DateTime LastLogin { get; set; } = DateTime.Now;
         public string? Role { get; set; } = "USER";
     }

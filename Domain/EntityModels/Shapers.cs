@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace Domain.EntityModels
 {
-    public class Product
+    public class Shapers
     {
         [Key]
-        public int ProductId { get; set; }
-        public int UserId { get; set; }
-        public virtual User User { get; set; }
+        public int Id { get; set; }
+        public int ShaperName { get; set; }
         public DateTime DateAdded { get; set; }
 
         public bool Active { get; set; } = true;

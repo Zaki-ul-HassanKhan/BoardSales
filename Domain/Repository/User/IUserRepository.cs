@@ -9,7 +9,8 @@ namespace Domain.Repository.User
 {
     public interface IUserRepository:IGenericRepository<EntityModels.User>
     {
-        bool GetByUserNamePassword(LoginModel loginModel);
-        Task<RegisterUserRequest> AddUser(RegisterUserRequest registerUserRequest);
+        Domain.DtoModels.User GetByUserNamePassword(LoginModel loginModel);
+        Task<Domain.DtoModels.User> AddUser(RegisterUserRequest registerUserRequest);
+        Task<Domain.DtoModels.User> UpdateUser(Domain.DtoModels.User registerUserRequest,string path);
     }
 }

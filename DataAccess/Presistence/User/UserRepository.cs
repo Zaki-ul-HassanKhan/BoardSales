@@ -4,9 +4,13 @@ using Domain.DtoModels;
 using Domain.EntityModels;
 using Domain.Repository.UnitOfWork;
 using Domain.Repository.User;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,88 +19,155 @@ namespace DataAccess.Presistence.User
 {
     public class UserRepository : GenericRepository<Domain.EntityModels.User>, IUserRepository
     {
-        private readonly IUnitOfWork _unitOfWork;
         private readonly BoardSalesDbContext _boardSalesDbContext;
-        public UserRepository(BoardSalesDbContext boardSalesDbContext, IUnitOfWork unitOfWork) : base(boardSalesDbContext)
+        private readonly IConfiguration _configuration;
+        public UserRepository(BoardSalesDbContext boardSalesDbContext, IConfiguration configuration) : base(boardSalesDbContext)
         {
             _boardSalesDbContext = boardSalesDbContext;
-            _unitOfWork = unitOfWork;
+            _configuration = configuration;
         }
         const int keySize = 64;
         const int iterations = 350000;
         HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA512;
-        public async Task<RegisterUserRequest> AddUser(RegisterUserRequest registerUserRequest)
+        public async Task<Domain.DtoModels.User> AddUser(RegisterUserRequest registerUserRequest)
         {
-            var user = new RegisterUserRequest();
-            byte[] salt = RandomNumberGenerator.GetBytes(keySize);
-            var hash = Rfc2898DeriveBytes.Pbkdf2(
-        Encoding.UTF8.GetBytes(registerUserRequest.Password),
-        salt,
-        iterations,
-        hashAlgorithm,
-        keySize);
-          string  HashString = Convert.ToHexString(hash);
-            var username = registerUserRequest.UserName;
-            var updateuser = new Domain.EntityModels.User()
+            var user = new Domain.DtoModels.User();
+            try
             {
-                Active = true,
-                DateAdded = DateTime.Now,
-                UserName = username,
-                Name = "",
-                LocationName = "",
-                Location = "",
-                ProfilePicture = "",
-                Verified = true,
-                VerificationCode = "",
-                LastLogin = DateTime.Now,
+                string HashString = "";
+                byte[] salt = new byte[keySize];
+                var isUserExsist = _boardSalesDbContext.User.Where(x => x.UserName == registerUserRequest.UserName).FirstOrDefault();
+                if (isUserExsist == null)
+                {
+                    if (registerUserRequest.Platform == "App")
+                    {
+                       salt = RandomNumberGenerator.GetBytes(keySize);
+                        var hash = Rfc2898DeriveBytes.Pbkdf2(
+                    Encoding.UTF8.GetBytes(registerUserRequest.Password),
+                    salt,
+                    iterations,
+                    hashAlgorithm,
+                    keySize);
+                        HashString = Convert.ToHexString(hash);
+                    }
+                    var updateuser = new Domain.EntityModels.User()
+                    {
+                        Active = true,
+                        DateAdded = DateTime.Now,
+                        UserName = registerUserRequest.UserName,
+                        Name = registerUserRequest.Name,
+                        LocationName = "",
+                        Location = "",
+                        ProfilePicture = registerUserRequest.ProfilePicture,
+                        Verified = true,
+                        VerificationCode = "",
+                        LastLogin = DateTime.Now,
 
-            };
+                    };
 
-            _boardSalesDbContext.User.Add(updateuser);
-            _boardSalesDbContext.SaveChanges();
-            int id = updateuser.UserId;
-            var identity = new Identity()
+                    _boardSalesDbContext.User.Add(updateuser);
+                    _boardSalesDbContext.SaveChanges();
+                    var identity = new Identity()
+                    {
+                        UserId = updateuser.UserId,
+                        Adapter = registerUserRequest.Platform,
+                        Hash = HashString,
+                        Salt = salt,
+                        Status = true,
+                        DateAdded = DateTime.Now
+                    };
+                    _boardSalesDbContext.Identity.Add(identity);
+                    _boardSalesDbContext.SaveChanges();
+                   user = UserModelResponse(updateuser);
+                    user.Token = TokenGenerator(updateuser.UserName);
+                }
+                else
+                {
+                    user = UserModelResponse(isUserExsist);
+
+                    user.Token = TokenGenerator(isUserExsist.UserName);
+                }
+            }
+            catch (Exception ex)
             {
-                UserId = id,
-                Adapter = "App",
-                Hash = HashString,
-                Salt = salt,
-                Status = true,
-                DateAdded = DateTime.Now
-            };
-            _boardSalesDbContext.Identity.Add(identity);
-            _boardSalesDbContext.SaveChanges();
+
+            }
             return user;
         }
 
-        bool IUserRepository.GetByUserNamePassword(LoginModel loginModel)
+        public async Task<Domain.DtoModels.User> UpdateUser(Domain.DtoModels.User registerUserRequest, string path)
         {
             var user = new Domain.DtoModels.User();
-            user = _boardSalesDbContext.User.Where(x => x.UserName == loginModel.UserName).Select(x => new Domain.DtoModels.User
+            try
             {
+                string mystr = registerUserRequest.ProfilePicture.Replace("data:image/jpeg;base64,", string.Empty);
+                var testb = Convert.FromBase64String(mystr);
+                //var path = Path.Combine("@D:/Images","testb");
+                System.IO.File.WriteAllBytes(path, testb);
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return user;
+        }
+
+        Domain.DtoModels.User IUserRepository.GetByUserNamePassword(LoginModel loginModel)
+        {   
+            var user = new Domain.DtoModels.User();
+            var Dbuser = _boardSalesDbContext.User.Where(x => x.UserName == loginModel.UserName).Select(x => new Domain.DtoModels.User
+            {
+                UserId = x.UserId,
                 UserName = x.UserName,
-                UserId = x.UserId
+                Name = x.Name,
+                LocationName = x.LocationName,
+                Location = x.Location,
+                ProfilePicture = x.ProfilePicture
+
             }).FirstOrDefault();
 
-            if (user != null)
+            if (Dbuser != null)
             {
-                var identity = _boardSalesDbContext.Identity.Where(x => x.UserId == user.UserId).FirstOrDefault();
+                var identity = _boardSalesDbContext.Identity.Where(x => x.UserId == Dbuser.UserId).FirstOrDefault();
                 if (identity.Adapter == "App")
                 {
                     if (VerifyPassword(loginModel.Password, identity?.Hash, identity?.Salt))
                     {
-                        return true;
+                        user.Token = TokenGenerator(Dbuser.UserName);
+                        return user;
+                    }
+                    else
+                    {
+                        user.Code = "400";
+                        user.Message = "Password didn't matched";
                     }
                 }
-                return false;
+                 user.Token = TokenGenerator(Dbuser.UserName);
+                return user;
             }
             else
             {
-
-                return false;
+                user.Code = "400";
+                user.Message = "User is not registered";
+                return user;
             }
         }
-        bool VerifyPassword(string password, string? hash, byte[]? salt)
+
+        #region private
+        private Domain.DtoModels.User UserModelResponse(Domain.EntityModels.User user)
+        {
+            return new Domain.DtoModels.User {
+                UserId = user.UserId,
+                UserName = user.UserName,
+                Name = user.Name,
+                LocationName = user.LocationName,
+                Location = user.Location,
+                ProfilePicture = user.ProfilePicture
+
+            };
+
+        }
+        private bool VerifyPassword(string password, string? hash, byte[]? salt)
         {
             if (hash == null || salt == null)
             {
@@ -108,5 +179,25 @@ namespace DataAccess.Presistence.User
                 return CryptographicOperations.FixedTimeEquals(hashToCompare, Convert.FromHexString(hash));
             }
         }
+        private string TokenGenerator(string user)
+        {
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+            var sigingkey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+
+            var signingCredentials = new SigningCredentials(sigingkey, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issue"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(7),
+                signingCredentials: signingCredentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        #endregion
     }
 }

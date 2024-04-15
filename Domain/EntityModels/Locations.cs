@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Domain.EntityModels
 {
-    public class Product
+    public class Locations
     {
         [Key]
-        public int ProductId { get; set; }
-        public int UserId { get; set; }
-        public virtual User User { get; set; }
+        public int Id { get; set; }
+        public string LocationName { get; set; }
         public DateTime DateAdded { get; set; }
 
         public bool Active { get; set; } = true;
+
     }
 }
