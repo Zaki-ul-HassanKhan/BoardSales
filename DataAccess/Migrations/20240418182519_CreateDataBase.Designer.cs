@@ -4,6 +4,7 @@ using DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(BoardSalesDbContext))]
-    partial class BoardSalesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240418182519_CreateDataBase")]
+    partial class CreateDataBase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,8 +234,8 @@ namespace DataAccess.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("BoardLength")
-                        .HasColumnType("longtext");
+                    b.Property<int?>("BoardLength")
+                        .HasColumnType("int");
 
                     b.Property<int?>("BoardType")
                         .HasColumnType("int");
@@ -289,16 +292,16 @@ namespace DataAccess.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool?>("Active")
+                    b.Property<bool>("Active")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int?>("BoardShapers")
+                    b.Property<int>("BoardShapers")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BoardType")
+                    b.Property<int>("BoardType")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Condition")
+                    b.Property<int>("Condition")
                         .HasColumnType("int");
 
                     b.Property<bool?>("ConsiderSwap")
@@ -310,10 +313,10 @@ namespace DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("FinSetup")
+                    b.Property<int>("FinSetup")
                         .HasColumnType("int");
 
-                    b.Property<int?>("FinSystem")
+                    b.Property<int>("FinSystem")
                         .HasColumnType("int");
 
                     b.Property<string>("ImagesPath")
@@ -323,10 +326,10 @@ namespace DataAccess.Migrations
                     b.Property<bool?>("IsFeatured")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool?>("IsPosted")
+                    b.Property<bool>("IsPosted")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool?>("IsSold")
+                    b.Property<bool>("IsSold")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Length")
@@ -349,9 +352,6 @@ namespace DataAccess.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Thickness")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Title")
                         .HasColumnType("longtext");
 
                     b.Property<int>("UserId")

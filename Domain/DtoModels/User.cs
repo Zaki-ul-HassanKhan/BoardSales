@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.DtoModels.Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Domain.DtoModels
 {
-    public class User :Response
+    public class User : Response
     {
         public int UserId { get; set; }
         public string? UserName { get; set; }
         public string? Name { get; set; }
         public string? LocationName { get; set; }
-        public string? Location { get; set; }
+        public int? Location { get; set; }
         public string? ProfilePicture { get; set; }
         public DateTime DateAdded { get; set; }
         public DateTime? DateUpdated { get; set; }
@@ -22,5 +23,9 @@ namespace Domain.DtoModels
         public DateTime LastLogin { get; set; }
         public string? Role { get; set; }
         public string? Token { get; set; }
+        public bool? GetStartedCompleted { get; set; }
+        public int? Distance { get; set; }
+        public int? BoardType { get; set; }
+        public string? BoardLength { get; set; }
     }
 }

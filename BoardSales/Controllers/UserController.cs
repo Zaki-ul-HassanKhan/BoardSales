@@ -1,7 +1,13 @@
 ﻿using Domain.DtoModels;
+using Domain.DtoModels.DeleteAccount;
+using Domain.DtoModels.Location;
+using Domain.DtoModels.Lookups;
+using Domain.DtoModels.UpdateUser;
+using Domain.DtoModels.UserRegisteration;
 using Domain.Repository.UnitOfWork;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
 using static System.Net.Mime.MediaTypeNames;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -21,18 +27,40 @@ namespace BoardSales.Controllers
         }
         // GET: api/<UserController>
         [HttpGet]
-        
+
         public ActionResult Get()
         {
-           var users = _unitOfWork.UserRepository.GetAll();
+            var users = _unitOfWork.UserRepository.GetAll();
             return Ok(users);
+        }
+
+        [Route("GetLookups")]
+        [HttpGet]
+        public ActionResult GetLookups()
+        {
+            var lookups = new LooksResponse();
+            lookups.Locations = new List<ListItem<int, string>>(
+                _unitOfWork.LocationRepository.GetAll().Select(x => new ListItem<int, string>
+                {
+                    Key = x.Id,
+                    Value = x.LocationName,
+                }));
+            lookups.BoardTypes = new List<ListItem<int, string>>(
+                _unitOfWork.BoardTypeRepository.GetAll().Select(x => new ListItem<int, string>
+                {
+                    Key = x.Id,
+                    Value = x.BoardTypeName
+                }
+                ));
+            return Ok(lookups);
         }
 
         // GET api/<UserController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public ActionResult Get(int id)
         {
-            return "value";
+            var users = _unitOfWork.UserRepository.GetUser(id);
+            return Ok(users);
         }
 
         // POST api/<UserController>
@@ -44,21 +72,41 @@ namespace BoardSales.Controllers
         }
         [Route("UpdateUser")]
         [HttpPost]
-        public ActionResult UpdateUser(Domain.DtoModels.User value)
+        public ActionResult UpdateUser(UpdateUserRequest value)
         {
-            var fileWithPath = "";
-            if (value.ProfilePicture != null) {
+            var contentPath = "";
+            if (value.ProfilePicture != null && value.ProfilePicture != "")
+            {
 
-                var contentPath = _environment.ContentRootPath;
-                var newFileName = value.UserId + ".jpg";
-                var path = Path.Combine(contentPath, "Uploads/ProfilePictures/"+value.UserId);
-                fileWithPath = Path.Combine(path, newFileName);
-                if (!Directory.Exists(path))
+                contentPath = _environment.WebRootPath + "/Uploads/ProfilePicture/";
+                value.FileName = value.UserId + ".jpg";
+                //path = Path.Combine(contentPath, "ProfilePictures/");
+                //  path = Path.Combine(path, value.FileName);
+                if (!Directory.Exists(contentPath))
                 {
-                    Directory.CreateDirectory(path);
+                    Directory.CreateDirectory(contentPath);
                 }
+                contentPath = Path.Combine(contentPath, value.FileName);
             }
-            var users = _unitOfWork.UserRepository.UpdateUser(value, fileWithPath);
+            var users = _unitOfWork.UserRepository.UpdateUser(value, contentPath);
+            return Ok(users.Result);
+        }
+
+        [Route("UpdatePassword")]
+        [HttpPost]
+        public ActionResult UpdatePassword(UpdatePasswordRequest value)
+        {
+
+            var users = _unitOfWork.UserRepository.UpdatePassword(value);
+            return Ok(users.Result);
+        }
+
+        [Route("DeleteAccount")]
+        [HttpPost]
+        public ActionResult DeleteAccount(DeleteAccountRequest value)
+        {
+
+            var users = _unitOfWork.UserRepository.DeleteAccount(value);
             return Ok(users.Result);
         }
 

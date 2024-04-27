@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.DtoModels
+namespace Domain.DtoModels.Shared
 {
     public class Response
     {

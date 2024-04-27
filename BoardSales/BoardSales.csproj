@@ -25,4 +25,9 @@
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\Uploads\ProfilePicture\" />
+  </ItemGroup>
+
 </Project>

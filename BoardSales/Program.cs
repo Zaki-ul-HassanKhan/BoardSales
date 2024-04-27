@@ -15,7 +15,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IUnitOfWork,UnitOfWorkRepository>();
-builder.Services.AddDbContext<BoardSalesDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("BoardAppConnectionString")));
+var connectionString = builder.Configuration.GetConnectionString("BoardAppConnectionString");
+builder.Services.AddDbContext<BoardSalesDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+//builder.Services.AddDbContext<BoardSalesDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("BoardAppConnectionString")));
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -43,6 +45,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 

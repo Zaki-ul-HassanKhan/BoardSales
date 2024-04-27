@@ -1,17 +1,20 @@
 ﻿using DataAccess.Context;
 using DataAccess.Presistence.Generic;
 using Domain.DtoModels;
+using Domain.DtoModels.DeleteAccount;
+using Domain.DtoModels.Lookups;
+using Domain.DtoModels.UserRegisteration;
 using Domain.EntityModels;
 using Domain.Repository.UnitOfWork;
 using Domain.Repository.User;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,6 +39,7 @@ namespace DataAccess.Presistence.User
             {
                 string HashString = "";
                 byte[] salt = new byte[keySize];
+
                 var isUserExsist = _boardSalesDbContext.User.Where(x => x.UserName == registerUserRequest.UserName).FirstOrDefault();
                 if (isUserExsist == null)
                 {
@@ -57,7 +61,7 @@ namespace DataAccess.Presistence.User
                         UserName = registerUserRequest.UserName,
                         Name = registerUserRequest.Name,
                         LocationName = "",
-                        Location = "",
+                        Location = 0,
                         ProfilePicture = registerUserRequest.ProfilePicture,
                         Verified = true,
                         VerificationCode = "",
@@ -95,55 +99,77 @@ namespace DataAccess.Presistence.User
             return user;
         }
 
-        public async Task<Domain.DtoModels.User> UpdateUser(Domain.DtoModels.User registerUserRequest, string path)
+        public async Task<Domain.DtoModels.User> UpdateUser(Domain.DtoModels.UpdateUser.UpdateUserRequest updateUserRequest, string path)
         {
             var user = new Domain.DtoModels.User();
             try
             {
-                string mystr = registerUserRequest.ProfilePicture.Replace("data:image/jpeg;base64,", string.Empty);
-                var testb = Convert.FromBase64String(mystr);
-                //var path = Path.Combine("@D:/Images","testb");
-                System.IO.File.WriteAllBytes(path, testb);
+               var dbUser = _boardSalesDbContext.User.Where(x => x.UserId == updateUserRequest.UserId).FirstOrDefault();
+                var identity = _boardSalesDbContext.Identity.Where(x => x.UserId == dbUser.UserId).FirstOrDefault();
+                if (updateUserRequest.FileName != null && updateUserRequest.FileName != "" && updateUserRequest.FileName != dbUser.ProfilePicture)
+                {
+                    string mystr = updateUserRequest.ProfilePicture.Replace("data:image/jpeg;base64,", string.Empty);
+                    var testb = Convert.FromBase64String(mystr);
+                    //var path = Path.Combine("@D:/Images","testb");
+                    System.IO.File.WriteAllBytes(path, testb);
+                }
+                dbUser.Name = updateUserRequest.Name;
+                dbUser.Location = updateUserRequest.Location;
+                dbUser.Distance =Convert.ToInt32(updateUserRequest.Distance);
+                dbUser.BoardType = updateUserRequest.BoardType;
+                dbUser.BoardLength = updateUserRequest.BoardLength;
+                dbUser.GetStartedCompleted = updateUserRequest.GetStartedCompleted;
+                dbUser.ProfilePicture = updateUserRequest.FileName == null ? dbUser.ProfilePicture : updateUserRequest.FileName;
+                user = UserModelResponse(dbUser);
+                //if (identity.Adapter == "App")
+                //{
+                //    user.ProfilePicture = user.ProfilePicture != "" ? updateUserRequest.FileName + user.ProfilePicture : "";
+                //}
+                _boardSalesDbContext.SaveChanges();
+
             }
             catch (Exception ex)
             {
-
+                user.Code = "400";
+                user.Message = ex.Message;
+                return user;
             }
             return user;
         }
 
-        Domain.DtoModels.User IUserRepository.GetByUserNamePassword(LoginModel loginModel)
+        public async Task<Domain.DtoModels.User> GetByUserNamePassword(LoginModel loginModel)
         {   
             var user = new Domain.DtoModels.User();
-            var Dbuser = _boardSalesDbContext.User.Where(x => x.UserName == loginModel.UserName).Select(x => new Domain.DtoModels.User
-            {
-                UserId = x.UserId,
-                UserName = x.UserName,
-                Name = x.Name,
-                LocationName = x.LocationName,
-                Location = x.Location,
-                ProfilePicture = x.ProfilePicture
-
-            }).FirstOrDefault();
+            var Dbuser = _boardSalesDbContext.User.Where(x => x.UserName == loginModel.UserName).FirstOrDefault();
 
             if (Dbuser != null)
             {
-                var identity = _boardSalesDbContext.Identity.Where(x => x.UserId == Dbuser.UserId).FirstOrDefault();
-                if (identity.Adapter == "App")
+                if (Dbuser.Active)
                 {
-                    if (VerifyPassword(loginModel.Password, identity?.Hash, identity?.Salt))
+                    var identity = _boardSalesDbContext.Identity.Where(x => x.UserId == Dbuser.UserId).FirstOrDefault();
+                    if (identity.Adapter == "App")
                     {
-                        user.Token = TokenGenerator(Dbuser.UserName);
-                        return user;
+                        if (VerifyPassword(loginModel.Password, identity?.Hash, identity?.Salt))
+                        {
+                            user = UserModelResponse(Dbuser);
+                            user.Token = TokenGenerator(Dbuser.UserName);
+                            return user;
+                        }
+                        else
+                        {
+                            user.Code = "400";
+                            user.Message = "Password didn't matched";
+                        }
                     }
-                    else
-                    {
-                        user.Code = "400";
-                        user.Message = "Password didn't matched";
-                    }
+                    user.Token = TokenGenerator(Dbuser.UserName);
+                    return user;
                 }
-                 user.Token = TokenGenerator(Dbuser.UserName);
-                return user;
+                else
+                {
+                    user.Code = "400";
+                    user.Message = "User is not active";
+                    return user;
+                }
             }
             else
             {
@@ -153,6 +179,91 @@ namespace DataAccess.Presistence.User
             }
         }
 
+        public async Task<Domain.DtoModels.User> GetUser(int userId)
+        {
+            var user = new Domain.DtoModels.User();
+            var Dbuser = _boardSalesDbContext.User.Where(x => x.UserId == userId).FirstOrDefault();
+
+            if (Dbuser != null)
+            {
+                if (Dbuser.Active)
+                {
+                   
+                            user = UserModelResponse(Dbuser);
+                            user.Token = TokenGenerator(Dbuser.UserName);
+                            return user;
+                }
+                else
+                {
+                    user.Code = "400";
+                    user.Message = "User is not active";
+                    return user;
+                }
+            }
+            else
+            {
+                user.Code = "400";
+                user.Message = "User is not registered";
+                return user;
+            }
+        }
+        public async Task<UpdatePasswordReponse> UpdatePassword(UpdatePasswordRequest updatePasswordRequest)
+        {
+            var updatePasswordReponse = new UpdatePasswordReponse();
+            try
+            {
+                var queryUser =
+                    from user in _boardSalesDbContext.User
+                    join identity in _boardSalesDbContext.Identity on user.UserId equals identity.UserId
+                    where identity.UserId == updatePasswordRequest.UserId
+                    select identity;
+                var identityUser = queryUser.FirstOrDefault();
+               // var user = _boardSalesDbContext.User.Where(x => x.UserId == updatePasswordRequest.UserId).FirstOrDefault();
+                if (queryUser != null && identityUser?.Adapter == "App")
+                {
+
+                    byte[] salt = RandomNumberGenerator.GetBytes(keySize);
+                    var hash = Rfc2898DeriveBytes.Pbkdf2(
+                    Encoding.UTF8.GetBytes(updatePasswordRequest.Password),
+                    salt,
+                    iterations,
+                    hashAlgorithm,
+                    keySize);
+                    string HashString = Convert.ToHexString(hash);
+                    identityUser.Salt = salt;
+                    identityUser.Hash = HashString;
+                    _boardSalesDbContext.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return updatePasswordReponse;
+        }
+
+        public async Task<DeleteAccountResponse> DeleteAccount(DeleteAccountRequest updatePasswordRequest)
+        {
+            var updatePasswordReponse = new DeleteAccountResponse();
+            try
+            {
+               
+                 var user = _boardSalesDbContext.User.Where(x => x.UserId == updatePasswordRequest.UserId).FirstOrDefault();
+                if (user != null)
+                {
+                    user.Active = false;
+                    _boardSalesDbContext.SaveChanges();
+                    updatePasswordReponse.Code = "200";
+                    updatePasswordReponse.Message = "Account Deleted Successfully";
+                }
+            }
+            catch (Exception ex)
+            {
+                updatePasswordReponse.Code = "400";
+                updatePasswordReponse.Message = ex.Message;
+            }
+            return updatePasswordReponse;
+        }
         #region private
         private Domain.DtoModels.User UserModelResponse(Domain.EntityModels.User user)
         {
@@ -162,7 +273,28 @@ namespace DataAccess.Presistence.User
                 Name = user.Name,
                 LocationName = user.LocationName,
                 Location = user.Location,
-                ProfilePicture = user.ProfilePicture
+                ProfilePicture = user.ProfilePicture,
+                GetStartedCompleted = user.GetStartedCompleted,
+                Distance = user.Distance,
+                BoardType = user.BoardType,
+                BoardLength = user.BoardLength
+
+            };
+
+        }
+
+        private Domain.EntityModels.User DtoModelToEntityModel(Domain.DtoModels.User user)
+        {
+            return new Domain.EntityModels.User
+            {
+                UserId = user.UserId,
+                UserName = user.UserName,
+                Name = user.Name,
+                LocationName = user.LocationName,
+                Location = user.Location,
+                ProfilePicture = user.ProfilePicture,
+                GetStartedCompleted = user.GetStartedCompleted,
+                Distance = user.Distance,
 
             };
 
@@ -197,6 +329,11 @@ namespace DataAccess.Presistence.User
                 signingCredentials: signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public Task<LooksResponse> GetLookups()
+        {
+            throw new NotImplementedException();
         }
         #endregion
     }
