@@ -42,8 +42,8 @@ namespace BoardSales.Controllers
             if (value.ImagesPath != null && value.ImagesPath.Count>0)
             {
 
-                contentPath = _environment.WebRootPath + "/Uploads/UserBoardPictures/";
-                value.FileName = value.UserId + ".jpg";
+                contentPath = _environment.WebRootPath + "/Uploads/UserBoardPictures/" + value.UserId;
+                value.FileName = contentPath;
                 //path = Path.Combine(contentPath, "ProfilePictures/");
                 //  path = Path.Combine(path, value.FileName);
                 if (!Directory.Exists(contentPath))
@@ -51,9 +51,10 @@ namespace BoardSales.Controllers
                     Directory.CreateDirectory(contentPath);
                 }
                 contentPath = Path.Combine(contentPath, value.FileName);
+
             }
 
-            var users = _unitOfWork.UserBoardRepository.AddUpdateUserBoard(value, contentPath);
+            var users = _unitOfWork.UserBoardRepository.AddUpdateUserBoard(value);
             return Ok(users.Result);
         }
 

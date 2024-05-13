@@ -10,6 +10,6 @@ namespace Domain.Repository.UserBoard
 {
     public interface IUserBoardRepository : IGenericRepository<UserBoards>
     {
-        Task<UserBoardsResponse> AddUpdateUserBoard(AddUpdateUserBoard userBoardsResponse, string path);
+        Task<UserBoardsResponse> AddUpdateUserBoard(AddUpdateUserBoard userBoardsResponse);
     }
 }

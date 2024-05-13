@@ -144,6 +144,7 @@ namespace DataAccess.Presistence.User
 
             if (Dbuser != null)
             {
+
                 if (Dbuser.Active)
                 {
                     var identity = _boardSalesDbContext.Identity.Where(x => x.UserId == Dbuser.UserId).FirstOrDefault();
@@ -173,6 +174,7 @@ namespace DataAccess.Presistence.User
             }
             else
             {
+                var usrr = _boardSalesDbContext.User.ToList();
                 user.Code = "400";
                 user.Message = "User is not registered";
                 return user;

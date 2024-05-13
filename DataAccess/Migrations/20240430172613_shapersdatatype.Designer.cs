@@ -4,6 +4,7 @@ using DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(BoardSalesDbContext))]
-    partial class BoardSalesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240430172613_shapersdatatype")]
+    partial class shapersdatatype
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -317,6 +320,7 @@ namespace DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ImagesPath")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<bool?>("IsFeatured")
@@ -329,10 +333,11 @@ namespace DataAccess.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Length")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("Location")
-                        .HasColumnType("int");
+                    b.Property<string>("Location")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Price")
                         .HasColumnType("longtext");
@@ -343,7 +348,7 @@ namespace DataAccess.Migrations
                     b.Property<int?>("SurfCraftWeight")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("TeamBoard")
+                    b.Property<bool?>("TeeamBoard")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Thickness")

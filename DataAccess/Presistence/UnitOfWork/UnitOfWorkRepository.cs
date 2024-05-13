@@ -1,12 +1,18 @@
 ﻿using DataAccess.Context;
 using DataAccess.Presistence.BoardType;
+using DataAccess.Presistence.FinSetup;
+using DataAccess.Presistence.FinSystem;
 using DataAccess.Presistence.Location;
 using DataAccess.Presistence.Product;
+using DataAccess.Presistence.Shapers;
 using DataAccess.Presistence.User;
 using DataAccess.Presistence.UserBoard;
 using Domain.Repository.BoardType;
+using Domain.Repository.FinSetup;
+using Domain.Repository.FinSystem;
 using Domain.Repository.Location;
 using Domain.Repository.Product;
+using Domain.Repository.Shapers;
 using Domain.Repository.UnitOfWork;
 using Domain.Repository.User;
 using Domain.Repository.UserBoard;
@@ -35,6 +41,9 @@ namespace DataAccess.Presistence.UnitOfWork
             LocationRepository = new LocationRepository(boardSalesDbContext);
             BoardTypeRepository = new BoardTypeRepository(boardSalesDbContext);
             UserBoardRepository = new UserBoardRepository(boardSalesDbContext);
+            ShapersRepository = new ShapersRepository(boardSalesDbContext);
+            FinSystemRepository = new FinSystemRepository(boardSalesDbContext);
+            FinSetupRepository = new FinSetupRepository(boardSalesDbContext);
         }
         public IUserRepository UserRepository { get; }
 
@@ -44,6 +53,9 @@ namespace DataAccess.Presistence.UnitOfWork
         public ILocationRepository LocationRepository { get; }
         public IBoardTypeRepository BoardTypeRepository { get; }
         public IUserBoardRepository UserBoardRepository { get; }
+        public IShapersRepository ShapersRepository { get; }
+        public IFinSystemRepository FinSystemRepository { get; }
+        public IFinSetupRepository FinSetupRepository { get; }
         //public IUserRepository User => throw new NotImplementedException();
 
         //public IProductRepository Product => throw new NotImplementedException();

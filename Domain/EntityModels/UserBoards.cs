@@ -11,7 +11,7 @@ namespace Domain.EntityModels
     {
         [Key]
         public int Id { get; set; }
-        public List<string> ImagesPath { get; set; }
+        public string? ImagesPath { get; set; }
         public string? Title { get; set; }
         public int? Condition { get; set; }
         public int? BoardType { get; set; }
@@ -20,16 +20,16 @@ namespace Domain.EntityModels
         public int? FinSetup { get; set; }
         public int? SurfCraftType { get; set; }
         public int? SurfCraftWeight { get; set; }
-        public string Length { get; set; }
+        public string? Length { get; set; }
         public string? Width { get; set; }
         public string? Thickness { get; set; }
         public string? Volume { get; set; }
         public string? Description { get; set; }
         public string? Price { get; set; }
         public bool? ConsiderSwap { get; set; }
-        public string? Location { get; set; }
+        public int? Location { get; set; }
         public bool? IsFeatured { get; set; }
-        public bool? TeeamBoard { get; set; }
+        public bool? TeamBoard { get; set; }
         public bool? Vintage { get; set; }
         public DateTime DateAdded { get; set; }
         public bool? IsPosted { get; set; } = false;

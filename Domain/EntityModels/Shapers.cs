@@ -11,7 +11,7 @@ namespace Domain.EntityModels
     {
         [Key]
         public int Id { get; set; }
-        public int ShaperName { get; set; }
+        public string? ShaperName { get; set; }
         public DateTime DateAdded { get; set; }
 
         public bool Active { get; set; } = true;

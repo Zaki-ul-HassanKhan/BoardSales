@@ -52,6 +52,26 @@ namespace BoardSales.Controllers
                     Value = x.BoardTypeName
                 }
                 ));
+                    lookups.Shapers = new List<ListItem<int, string>>(
+            _unitOfWork.ShapersRepository.GetAll().Select(x => new ListItem<int, string>
+            {
+                Key = x.Id,
+                Value = x.ShaperName
+            }
+            ));
+                    lookups.FinSetup = new List<ListItem<int, string>>(
+            _unitOfWork.FinSetupRepository.GetAll().Select(x => new ListItem<int, string>
+            {
+                Key = x.Id,
+                Value = x.FinSteupName
+            }
+            )); lookups.FinSystem = new List<ListItem<int, string>>(
+            _unitOfWork.FinSystemRepository.GetAll().Select(x => new ListItem<int, string>
+            {
+                Key = x.Id,
+                Value = x.FinSystemName
+            }
+            ));
             return Ok(lookups);
         }
 

@@ -25,11 +25,12 @@ namespace Domain.DtoModels.UserBoards
         public string? Description { get; set; }
         public string? Price { get; set; }
         public bool? ConsiderSwap { get; set; }
-        public string? Location { get; set; }
+        public int? Location { get; set; }
         public bool? IsFeatured { get; set; }
         public bool? TeeamBoard { get; set; }
         public bool? Vintage { get; set; }
         public bool? IsPosted { get; set; }
         public string? FileName { get; set; }
+        public int UserId { get; set; }
     }
 }
